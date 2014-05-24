@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.hawk.mapsv2demo.MainActivity"
+    tools:context="com.troll.trollMaps.MainActivity"
     tools:ignore="MergeRootFrame" >
 
     <fragment  

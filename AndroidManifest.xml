@@ -24,7 +24,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <permission
-        android:name="com.hawk.mapsv2demo.permission.MAPS_RECEIVE"
+        android:name="com.troll.trollMaps.permission.MAPS_RECEIVE"
         android:protectionLevel="signature" />
 
     <uses-permission android:name="com.hawk.mapsv2demo.permission.MAPS_RECEIVE" />
@@ -35,7 +35,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.hawk.mapsv2demo.MainActivity"
+            android:name="com.troll.trollMaps.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
