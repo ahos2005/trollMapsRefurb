@@ -27,15 +27,15 @@ import com.troll.trollmaps.R;
 public final class LocationUtils {
 
     // Debugging tag for the application
-    public static final String APPTAG = "LocationSample";
+    public static final String APPTAG = "TROLLmaps";
 
     // Name of shared preferences repository that stores persistent state
     public static final String SHARED_PREFERENCES =
-            "com.example.android.location.SHARED_PREFERENCES";
+            "com.troll.trollmaps.SHARED_PREFERENCES";
 
     // Key for storing the "updates requested" flag in shared preferences
     public static final String KEY_UPDATES_REQUESTED =
-            "com.example.android.location.KEY_UPDATES_REQUESTED";
+            "com.troll.trollmaps.KEY_UPDATES_REQUESTED";
 
     /*
      * Define a request code to send to Google Play services

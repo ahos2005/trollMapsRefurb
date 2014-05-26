@@ -8,7 +8,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -20,7 +23,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.location.LocationClient;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -32,7 +34,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends FragmentActivity implements
         GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener, 
+        GooglePlayServicesClient.OnConnectionFailedListener,
+        com.google.android.gms.location.LocationListener,
         LocationListener {
 
 	private GoogleMap map;	
@@ -52,9 +55,16 @@ public class MainActivity extends FragmentActivity implements
     SharedPreferences.Editor mEditor;
 
     //Starts out as false, to check if the user's preferences are off
-    boolean mUpdatesRequested = false;
-
-    @Override
+    boolean mUpdatesRequested;
+    
+    //Navigation status
+    boolean navigationStatus;
+    
+    protected LocationManager locationManager;
+    private Criteria myCriteria;
+    
+    @SuppressLint("NewApi")
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -83,7 +93,14 @@ public class MainActivity extends FragmentActivity implements
 
         //Create a new location client, using the enclosing class to handle callback
         mLocationClient = new LocationClient(this, this, this);
+        
+        
+        myCriteria = new Criteria();
+        myCriteria.setAccuracy(Criteria.ACCURACY_FINE);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(0L,0.0f, myCriteria, this, null);
     }
+    
     @SuppressLint("NewApi")
 	private void setUpMapIfNeeded() {
 	 	// Do a null check to confirm that we have not already instantiated the map.
@@ -148,7 +165,7 @@ public class MainActivity extends FragmentActivity implements
     public void onStop() {
         // If the client is connected
         if (mLocationClient.isConnected()) {
-            stopPeriodicUpdates();
+            stopPeriodicUpdates();		//AHMED:CRASHES ON FLIP
         }
         // After disconnect() is called, the client is considered "dead".
         mLocationClient.disconnect();
@@ -179,6 +196,7 @@ public class MainActivity extends FragmentActivity implements
          * instead, wait for onResume()
          */
         mLocationClient.connect();
+        
         Toast.makeText(this, "Start", Toast.LENGTH_SHORT).show();
     }
     /*
@@ -186,22 +204,23 @@ public class MainActivity extends FragmentActivity implements
      */
     @Override
     public void onResume() {
+        setUpMapIfNeeded();
         super.onResume();
-		setUpMapIfNeeded();
         Toast.makeText(this, "Resume", Toast.LENGTH_SHORT).show();
         // If the app already has a setting for getting location updates, get it
         if (mPrefs.contains(LocationUtils.KEY_UPDATES_REQUESTED)) {
             mUpdatesRequested = mPrefs.getBoolean(LocationUtils.KEY_UPDATES_REQUESTED, false);
-        if(mUpdatesRequested)
-        {
-        	Toast.makeText(this, "True", Toast.LENGTH_SHORT).show();
-        }
+//	        if(mUpdatesRequested == true)
+//	        	Toast.makeText(this, "True", Toast.LENGTH_SHORT).show();
+//	        else
+//	        	Toast.makeText(this, "False", Toast.LENGTH_SHORT).show();
+
         // Otherwise, turn off location updates until requested
         } else {
             mEditor.putBoolean(LocationUtils.KEY_UPDATES_REQUESTED, false);
             mEditor.commit();
         }
-
+        
     }
 
     /*
@@ -334,11 +353,13 @@ public class MainActivity extends FragmentActivity implements
         Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();	
         if (mUpdatesRequested) {
             startPeriodicUpdates();
-            mCurrentLocation = mLocationClient.getLastLocation();        String msg = "Updated Location: " +
-                    Double.toString(mCurrentLocation.getLatitude()) + "," +
-                    Double.toString(mCurrentLocation.getLongitude());
-            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();	
         }
+//        mCurrentLocation = mLocationClient.getLastLocation();        
+//        String msg = "Connected Location: " +
+//                Double.toString(mCurrentLocation.getLatitude()) + "," +
+//                Double.toString(mCurrentLocation.getLongitude());
+//        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();	
+    
     }
 
     /*
@@ -397,11 +418,11 @@ public class MainActivity extends FragmentActivity implements
     @Override
     public void onLocationChanged(Location location) {
 
-//        // Report to the UI that the location was updated
+        // Report to the UI that the location was updated
         Toast.makeText(this, "Location Updated", Toast.LENGTH_SHORT).show();	
-//
-//        // In the UI, set the latitude and longitude to the value received
+        // In the UI, set the latitude and longitude to the value received
     	mCurrentLocation = location;
+    	locationManager.removeUpdates(this);
     }
 
     /**
@@ -411,6 +432,7 @@ public class MainActivity extends FragmentActivity implements
     private void startPeriodicUpdates() {
 
         mLocationClient.requestLocationUpdates(mLocationRequest, this);
+        locationManager.requestLocationUpdates(0L,0.0f, myCriteria, this, null);
         Toast.makeText(this, "Location Updated Requested", Toast.LENGTH_SHORT).show();	
     }
 
@@ -419,7 +441,13 @@ public class MainActivity extends FragmentActivity implements
      * Location Services
      */
     private void stopPeriodicUpdates() {
-        mLocationClient.removeLocationUpdates(this);
+    	if(mLocationClient != null)
+    		mLocationClient.removeLocationUpdates(this);
+    	if(locationManager != null)
+    		locationManager.removeUpdates(this);
+
+    	else
+    		Log.d("Main Activity", "MO: mLocatoinClinet is null at stop");
         Toast.makeText(this, "Location Update Stopped", Toast.LENGTH_SHORT).show();	
     }
 
@@ -485,4 +513,22 @@ public class MainActivity extends FragmentActivity implements
             return mDialog;
         }
     }
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
 }
