@@ -187,6 +187,7 @@ public class MainActivity extends FragmentActivity implements
     @Override
     public void onResume() {
         super.onResume();
+		setUpMapIfNeeded();
         Toast.makeText(this, "Resume", Toast.LENGTH_SHORT).show();
         // If the app already has a setting for getting location updates, get it
         if (mPrefs.contains(LocationUtils.KEY_UPDATES_REQUESTED)) {
@@ -225,21 +226,12 @@ public class MainActivity extends FragmentActivity implements
 
                         // Log the result
                         Log.d(LocationUtils.APPTAG, getString(R.string.resolved));
-
-                        // Display the result
-//                        mConnectionState.setText(R.string.connected);
-//                        mConnectionStatus.setText(R.string.resolved);
                     break;
 
                     // If any other result was returned by Google Play services
                     default:
                         // Log the result
                         Log.d(LocationUtils.APPTAG, getString(R.string.no_resolution));
-
-                        // Display the result
-//                        mConnectionState.setText(R.string.disconnected);
-//                        mConnectionStatus.setText(R.string.no_resolution);
-
                     break;
                 }
 
@@ -298,10 +290,7 @@ public class MainActivity extends FragmentActivity implements
 
             // Get the current location
         	mCurrentLocation = mLocationClient.getLastLocation();
-        	Toast.makeText(this, "Button", Toast.LENGTH_SHORT).show();
-
-            // Display the current location in the UI
-//            mLatLng.setText(LocationUtils.getLatLng(this, currentLocation));
+        	Toast.makeText(this, "My Location Button", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -342,10 +331,13 @@ public class MainActivity extends FragmentActivity implements
      */
     @Override
     public void onConnected(Bundle bundle) {
-//        mConnectionStatus.setText(R.string.connected);
-
+        Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();	
         if (mUpdatesRequested) {
             startPeriodicUpdates();
+            mCurrentLocation = mLocationClient.getLastLocation();        String msg = "Updated Location: " +
+                    Double.toString(mCurrentLocation.getLatitude()) + "," +
+                    Double.toString(mCurrentLocation.getLongitude());
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();	
         }
     }
 
@@ -355,7 +347,8 @@ public class MainActivity extends FragmentActivity implements
      */
     @Override
     public void onDisconnected() {
-//        mConnectionStatus.setText(R.string.disconnected);
+        Toast.makeText(this, "Disonnected", Toast.LENGTH_SHORT).show();	
+        stopPeriodicUpdates();//POSSIBLE FAILURE: AHMED
     }
 
     /*
@@ -405,12 +398,10 @@ public class MainActivity extends FragmentActivity implements
     public void onLocationChanged(Location location) {
 
 //        // Report to the UI that the location was updated
-//        mConnectionStatus.setText(R.string.location_updated);
+        Toast.makeText(this, "Location Updated", Toast.LENGTH_SHORT).show();	
 //
 //        // In the UI, set the latitude and longitude to the value received
-//        mLatLng.setText(LocationUtils.getLatLng(this, location));
-    	mCurrentLocation = mLocationClient.getLastLocation();
-    	Toast.makeText(this, "Change", Toast.LENGTH_SHORT).show();
+    	mCurrentLocation = location;
     }
 
     /**
@@ -420,7 +411,7 @@ public class MainActivity extends FragmentActivity implements
     private void startPeriodicUpdates() {
 
         mLocationClient.requestLocationUpdates(mLocationRequest, this);
-//        mConnectionState.setText(R.string.location_requested);
+        Toast.makeText(this, "Location Updated Requested", Toast.LENGTH_SHORT).show();	
     }
 
     /**
@@ -429,7 +420,7 @@ public class MainActivity extends FragmentActivity implements
      */
     private void stopPeriodicUpdates() {
         mLocationClient.removeLocationUpdates(this);
-//        mConnectionState.setText(R.string.location_updates_stopped);
+        Toast.makeText(this, "Location Update Stopped", Toast.LENGTH_SHORT).show();	
     }
 
     /**
