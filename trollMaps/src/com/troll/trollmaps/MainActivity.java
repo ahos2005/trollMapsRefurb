@@ -27,6 +27,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -422,7 +423,16 @@ public class MainActivity extends FragmentActivity implements
         Toast.makeText(this, "Location Updated", Toast.LENGTH_SHORT).show();	
         // In the UI, set the latitude and longitude to the value received
     	mCurrentLocation = location;
-    	locationManager.removeUpdates(this);
+    	
+    	CameraPosition cameraPosition = new CameraPosition.Builder()
+    			.target(new LatLng(location.getLatitude(), location.getLongitude())) // Sets the center of the map to
+    	        .zoom(currentMapZoom)                   // Sets the zoom
+    	        .bearing(0)//(float) myBearing) // Sets the orientation of the camera to east
+    	        .tilt(30)//(float)myAngle)    // Sets the tilt of the camera to 30 degrees
+    	        .build();    // Creates a CameraPosition from the builder
+    	    	map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+//    	locationManager.removeUpdates(this);
     }
 
     /**
